@@ -1,6 +1,5 @@
 ## 🌟 Appreciation for Resources
 
-<<<<<<< HEAD
 Special thanks to:
 
 - EMKC for providing the Piston API:
