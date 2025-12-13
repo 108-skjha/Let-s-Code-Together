@@ -17,4 +17,22 @@
 - 🔠 Option to change font size and font family
 - 🎨 Multiple themes for personalized coding experience
 - 🎨 Collaborative Drawing: Enable users to draw and sketch collaboratively in real-time
-- 🤖 Copilot: An AI-powered assistant that generates code, allowing you to insert, copy, or replace content seamlessly within your files.
+- 🤖 Copilot: An AI-powered assistant that generates code, allowing you to insert, copy,
+ or replace content seamlessly within your files.
+
+
+🌟 Appreciation for Resources
+Special thanks to:
+
+EMKC for providing the Piston API:
+
+Piston Repository
+Piston Docs
+Tldraw contributors:
+
+Tldraw Repository
+Tldraw Documentation
+Pollinations AI:
+
+Pollinations Repository
+Pollinations Docs
