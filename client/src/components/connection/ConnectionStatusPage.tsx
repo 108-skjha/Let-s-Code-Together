@@ -21,7 +21,7 @@ const ConnectionError = () => {
     return (
         <>
             <span className="whitespace-break-spaces text-lg font-medium text-slate-300">
-                Oops! Something went wrong. Please try again
+                Oops! Something went wrong, Please try again
             </span>
             <div className="flex flex-wrap justify-center gap-4">
                 <button
