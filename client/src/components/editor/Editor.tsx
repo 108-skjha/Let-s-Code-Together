@@ -10,7 +10,7 @@ import { SocketEvent } from "@/types/socket"
 
 import { color } from "@uiw/codemirror-extensions-color"
 import { hyperLink } from "@uiw/codemirror-extensions-hyper-link"
-import { LanguageName, loadLanguage } from "@uiw/codemirror-extensions-langs"
+import { loadLanguage } from "@uiw/codemirror-extensions-langs"
 
 import CodeMirror, {
   Extension,
@@ -19,8 +19,7 @@ import CodeMirror, {
 } from "@uiw/react-codemirror"
 
 import { EditorView } from "@codemirror/view"
-import { useEffect, useMemo, useState, useRef, useCallback } from "react"
-import toast from "react-hot-toast"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import {
   collaborativeHighlighting,
@@ -28,57 +27,51 @@ import {
 } from "./collaborativeHighlighting"
 
 /* =====================================================
-   LANGUAGE NORMALIZER (PISTON → CODEMIRROR)
+   LANGUAGE NORMALIZER (ALL PISTON → CODEMIRROR)
 ===================================================== */
-const normalizeLanguage = (lang: string): LanguageName | null => {
-  const map: Record<string, LanguageName> = {
-    // Common
-    javascript: "javascript",
-    js: "javascript",
-    typescript: "typescript",
-    ts: "typescript",
+const LANGUAGE_MAP: Record<string, string> = {
+  javascript: "js",
+  js: "js",
+  typescript: "ts",
+  ts: "ts",
 
-    python: "python",
-    py: "python",
+  python: "py",
+  py: "py",
 
-    c: "c",
-    "c language": "c",
+  c: "c",
+  cpp: "cpp",
+  "c++": "cpp",
 
-    "c++": "cpp",
-    cpp: "cpp",
+  java: "java",
+  kotlin: "kt",
 
-    java: "java",
-    kotlin: "kotlin",
+  go: "go",
+  rust: "rs",
+  ruby: "rb",
+  php: "php",
+  swift: "swift",
+  dart: "dart",
 
-    go: "go",
-    rust: "rust",
-    ruby: "ruby",
-    php: "php",
-    swift: "swift",
-    dart: "dart",
+  csharp: "cs",
+  "c#": "cs",
 
-    csharp: "csharp",
-    "c#": "csharp",
+  scala: "scala",
+  haskell: "hs",
+  lua: "lua",
+  perl: "pl",
 
-    scala: "scala",
-    haskell: "haskell",
-    lua: "lua",
-    perl: "perl",
-    bash: "shell",
-    powershell: "powershell",
+  bash: "bash",
+  shell: "bash",
+  powershell: "ps1",
 
-    sql: "sql",
-    sqlite3: "sql",
+  sql: "sql",
+  sqlite3: "sql",
 
-    r: "r",
-    julia: "julia",
+  r: "r",
+  julia: "jl",
 
-    // Fallbacks
-    plaintext: "markdown",
-    text: "markdown",
-  }
-
-  return map[lang.toLowerCase()] ?? null
+  plaintext: "markdown",
+  text: "markdown",
 }
 
 function Editor() {
@@ -90,7 +83,7 @@ function Editor() {
 
   const editorRef = useRef<any>(null)
   const [extensions, setExtensions] = useState<Extension[]>([])
-  const [timeOut, setTimeOut] = useState(setTimeout(() => {}, 0))
+  const [timeOut, setTimeOut] = useState<any>(null)
 
   const filteredUsers = useMemo(
     () => users.filter((u) => u.username !== currentUser.username),
@@ -104,8 +97,7 @@ function Editor() {
     const file: FileSystemItem = { ...activeFile, content: code }
     setActiveFile(file)
 
-    const selection = view.state?.selection?.main
-    const cursorPosition = selection?.head || 0
+    const cursorPosition = view.state.selection.main.head
 
     socket.emit(SocketEvent.TYPING_START, { cursorPosition })
     socket.emit(SocketEvent.FILE_UPDATED, {
@@ -125,24 +117,22 @@ function Editor() {
 
   /* ================= EXTENSIONS ================= */
   useEffect(() => {
-    const baseExtensions: Extension[] = [
+    const base: Extension[] = [
       color,
       hyperLink,
       collaborativeHighlighting(),
       scrollPastEnd(),
     ]
 
-    const normalizedLang = normalizeLanguage(language)
-    const langExt = normalizedLang ? loadLanguage(normalizedLang) : null
+    const key = LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase()
+    const langExt = loadLanguage(key as any)
 
     if (langExt) {
-      baseExtensions.push(langExt)
-    } else {
-      console.warn(`No syntax support for language: ${language}`)
+      base.push(langExt)
     }
 
-    setExtensions(baseExtensions)
-  }, [language, filteredUsers])
+    setExtensions(base)
+  }, [language])
 
   /* ================= REMOTE USERS ================= */
   useEffect(() => {
