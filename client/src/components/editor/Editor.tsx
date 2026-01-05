@@ -10,7 +10,7 @@ import { SocketEvent } from "@/types/socket"
 
 import { color } from "@uiw/codemirror-extensions-color"
 import { hyperLink } from "@uiw/codemirror-extensions-hyper-link"
-import { loadLanguage } from "@uiw/codemirror-extensions-langs"
+import * as langs from "@uiw/codemirror-extensions-langs"
 
 import CodeMirror, {
   Extension,
@@ -18,7 +18,6 @@ import CodeMirror, {
   scrollPastEnd,
 } from "@uiw/react-codemirror"
 
-import { EditorView } from "@codemirror/view"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import {
@@ -27,51 +26,62 @@ import {
 } from "./collaborativeHighlighting"
 
 /* =====================================================
-   LANGUAGE NORMALIZER (ALL PISTON → CODEMIRROR)
+   LANGUAGE MAP (PISTON / USER → CODEMIRROR)
+   ⚠️ NO LanguageName TYPE (avoids TS2322 on Vercel)
 ===================================================== */
 const LANGUAGE_MAP: Record<string, string> = {
-  javascript: "js",
-  js: "js",
-  typescript: "ts",
-  ts: "ts",
+  // JS / TS
+  javascript: "javascript",
+  js: "javascript",
+  typescript: "typescript",
+  ts: "typescript",
 
-  python: "py",
-  py: "py",
+  // Python
+  python: "python",
+  py: "python",
 
+  // C / C++
   c: "c",
+  "c language": "c",
   cpp: "cpp",
   "c++": "cpp",
 
+  // JVM
   java: "java",
-  kotlin: "kt",
+  kotlin: "kotlin",
+  scala: "scala",
 
+  // Others
   go: "go",
-  rust: "rs",
-  ruby: "rb",
+  rust: "rust",
+  ruby: "ruby",
   php: "php",
   swift: "swift",
   dart: "dart",
 
-  csharp: "cs",
-  "c#": "cs",
+  // C#
+  csharp: "csharp",
+  "c#": "csharp",
 
-  scala: "scala",
-  haskell: "hs",
+  // Scripting
+  bash: "shell",
+  shell: "shell",
+  powershell: "powershell",
+  perl: "perl",
   lua: "lua",
-  perl: "pl",
 
-  bash: "bash",
-  shell: "bash",
-  powershell: "ps1",
-
+  // Data
   sql: "sql",
+  sqlite: "sql",
   sqlite3: "sql",
 
+  // Scientific
   r: "r",
-  julia: "jl",
+  julia: "julia",
 
-  plaintext: "markdown",
+  // Fallback
   text: "markdown",
+  plaintext: "markdown",
 }
 
 function Editor() {
@@ -97,7 +107,8 @@ function Editor() {
     const file: FileSystemItem = { ...activeFile, content: code }
     setActiveFile(file)
 
-    const cursorPosition = view.state.selection.main.head
+    const selection = view.state?.selection?.main
+    const cursorPosition = selection?.head ?? 0
 
     socket.emit(SocketEvent.TYPING_START, { cursorPosition })
     socket.emit(SocketEvent.FILE_UPDATED, {
@@ -105,12 +116,12 @@ function Editor() {
       newContent: code,
     })
 
-    clearTimeout(timeOut)
-    const newTimeOut = setTimeout(
+    if (timeOut) clearTimeout(timeOut)
+    const newTimeout = setTimeout(
       () => socket.emit(SocketEvent.TYPING_PAUSE),
       800,
     )
-    setTimeOut(newTimeOut)
+    setTimeOut(newTimeout)
   }
 
   usePageEvents()
@@ -124,15 +135,18 @@ function Editor() {
       scrollPastEnd(),
     ]
 
-    const key = LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase()
-    const langExt = loadLanguage(key as any)
+    const key =
+      LANGUAGE_MAP[language.toLowerCase()] || language.toLowerCase()
 
-    if (langExt) {
-      base.push(langExt)
+    // 🔥 Runtime-safe lookup (NO TypeScript union error)
+    const loader = (langs as any)[key]
+
+    if (typeof loader === "function") {
+      base.push(loader())
     }
 
     setExtensions(base)
-  }, [language])
+  }, [language, filteredUsers])
 
   /* ================= REMOTE USERS ================= */
   useEffect(() => {
