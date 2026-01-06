@@ -1,26 +1,36 @@
 import illustration from "@/assets/illustration.svg"
 import FormComponent from "@/components/forms/FormComponent"
-// import Footer from "@/components/common/Footer";
 
 function HomePage() {
-    return (
-          
-          <div className="flex min-h-screen flex-col items-center justify-center gap-16 bg-black">
-            <div className="my-12 flex h-full min-w-full flex-col items-center justify-evenly sm:flex-row sm:pt-0">
-                <div className="flex w-full animate-up-down justify-center sm:w-1/2 sm:pl-4">
-                    <img
-                        src={illustration}
-                        alt="Code Sync Illustration"
-                        className="mx-auto w-[250px] sm:w-[400px]"
-                    />
-                </div>
-                <div className="flex w-full items-center justify-center sm:w-1/2">
-                    <FormComponent />
-                </div>
-            </div>
-            {/* <Footer /> */}
+  return (
+    <div className="relative min-h-screen bg-black">
+
+      {/* MAIN CONTENT */}
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex w-full flex-col items-center justify-evenly gap-16 sm:flex-row">
+
+          <div className="flex w-full animate-up-down justify-center sm:w-1/2">
+            <img
+              src={illustration}
+              alt="Code Sync Illustration"
+              className="mx-auto w-[250px] sm:w-[400px]"
+            />
+          </div>
+
+          <div className="flex w-full items-center justify-center sm:w-1/2">
+            <FormComponent />
+          </div>
+
         </div>
-    )
+      </div>
+
+      {/* FOOTER */}
+      <footer className="absolute bottom-4 w-full text-center text-sm text-gray-400">
+        © 2026–2030 Shrawan Kumar Jha
+      </footer>
+
+    </div>
+  )
 }
 
 export default HomePage
