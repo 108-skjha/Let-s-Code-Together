@@ -23,23 +23,17 @@ const FormComponent = () => {
     }
 
     const handleInputChanges = (e: ChangeEvent<HTMLInputElement>) => {
-        const name = e.target.name
-        const value = e.target.value
+        const { name, value } = e.target
         setCurrentUser({ ...currentUser, [name]: value })
     }
 
     const validateForm = () => {
-        if (currentUser.username.trim().length === 0) {
-            toast.error("Enter your username")
-            return false
-        } else if (currentUser.roomId.trim().length === 0) {
-            toast.error("Enter a room id")
-            return false
-        } else if (currentUser.roomId.trim().length < 5) {
-            toast.error("ROOM Id must be at least 5 characters long")
-            return false
-        } else if (currentUser.username.trim().length < 3) {
+        if (currentUser.username.trim().length < 3) {
             toast.error("Username must be at least 3 characters long")
+            return false
+        }
+        if (currentUser.roomId.trim().length < 5) {
+            toast.error("ROOM Id must be at least 5 characters long")
             return false
         }
         return true
@@ -49,6 +43,7 @@ const FormComponent = () => {
         e.preventDefault()
         if (status === USER_STATUS.ATTEMPTING_JOIN) return
         if (!validateForm()) return
+
         toast.loading("Joining room...")
         setStatus(USER_STATUS.ATTEMPTING_JOIN)
         socket.emit(SocketEvent.JOIN_REQUEST, currentUser)
@@ -58,7 +53,7 @@ const FormComponent = () => {
         if (currentUser.roomId.length > 0) return
         if (location.state?.roomId) {
             setCurrentUser({ ...currentUser, roomId: location.state.roomId })
-            if (currentUser.username.length === 0) {
+            if (!currentUser.username) {
                 toast.success("Enter your username")
             }
         }
@@ -70,15 +65,12 @@ const FormComponent = () => {
             return
         }
 
-        const isRedirect = sessionStorage.getItem("redirect") || false
+        const isRedirect = sessionStorage.getItem("redirect")
 
         if (status === USER_STATUS.JOINED && !isRedirect) {
-            const username = currentUser.username
             sessionStorage.setItem("redirect", "true")
             navigate(`/editor/${currentUser.roomId}`, {
-                state: {
-                    username,
-                },
+                state: { username: currentUser.username },
             })
         } else if (status === USER_STATUS.JOINED && isRedirect) {
             sessionStorage.removeItem("redirect")
@@ -86,11 +78,25 @@ const FormComponent = () => {
             socket.disconnect()
             socket.connect()
         }
-    }, [currentUser, location.state?.redirect, navigate, setStatus, socket, status])
+    }, [currentUser, navigate, setStatus, socket, status])
 
     return (
-        <div className="flex w-full max-w-[500px] flex-col items-center justify-center gap-4 p-4 sm:w-[500px] sm:p-8">
-            <img src={logo} alt="Logo" className="w-full"/>
+        <div className="flex w-full max-w-[520px] flex-col items-center justify-center gap-6 p-4 sm:p-8">
+
+            {/* 🔥 BIG FLAGSHIP LOGO */}
+            <img
+                src={logo}
+                alt="Let's Code Together Logo"
+                className="
+                  w-[420px]
+                  sm:w-[480px]
+                  md:w-[520px]
+                  select-none
+                "
+                draggable={false}
+            />
+
+            {/* FORM */}
             <form onSubmit={joinRoom} className="flex w-full flex-col gap-4">
                 <input
                     type="text"
@@ -100,6 +106,7 @@ const FormComponent = () => {
                     onChange={handleInputChanges}
                     value={currentUser.roomId}
                 />
+
                 <input
                     type="text"
                     name="username"
@@ -109,6 +116,7 @@ const FormComponent = () => {
                     value={currentUser.username}
                     ref={usernameRef}
                 />
+
                 <button
                     type="submit"
                     className="mt-2 w-full rounded-md bg-primary px-8 py-3 text-lg font-semibold text-black"
@@ -116,8 +124,9 @@ const FormComponent = () => {
                     Join
                 </button>
             </form>
+
             <button
-                className="cursor-pointer select-none underline"
+                className="cursor-pointer select-none text-sm underline opacity-80 hover:opacity-100"
                 onClick={createNewRoomId}
             >
                 Generate Unique Room Id
