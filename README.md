@@ -14,9 +14,3 @@ Special thanks to:
 - Pollinations AI:
   - [Pollinations Repository](https://github.com/pollinations/pollinations)
   - [Pollinations Docs](https://pollinations.ai/)
-
-
-## License
-MIT License © Shrawan Kumar Jha  
-https://shrawan-kumarjha.mit-license.org
-=======
